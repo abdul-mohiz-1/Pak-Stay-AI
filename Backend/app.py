@@ -16,14 +16,23 @@ app = Flask(__name__, template_folder=FRONTEND_DIR)
 CORS(app)
 
 # --- API KEYS & SETUP ---
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
-pinecone_index = pc.Index("pak-stay-index")
-groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+# Safety check: agar key na mile to error print kare
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
-# --- GEMINI EMBEDDING FUNCTION (Stable & Fast) ---
+if not GEMINI_API_KEY:
+    print("CRITICAL ERROR: GEMINI_API_KEY not found!")
+
+genai.configure(api_key=GEMINI_API_KEY)
+pc = Pinecone(api_key=PINECONE_API_KEY)
+pinecone_index = pc.Index("pak-stay-index")
+groq_client = Groq(api_key=GROQ_API_KEY)
+
+# --- GEMINI EMBEDDING FUNCTION ---
 def get_embedding(text):
     try:
+        model = genai.GenerativeModel('gemini-1.5-flash') # Sahi model call
         result = genai.embed_content(
             model="models/text-embedding-004",
             content=text,
@@ -31,8 +40,8 @@ def get_embedding(text):
         )
         return result['embedding']
     except Exception as e:
-        print(f"Gemini API Error: {e}")
-        return []
+        print(f"Gemini API Error details: {e}")
+        return None # None return karein taake hum handle kar sakein
 
 @app.route('/')
 def home():
@@ -46,31 +55,20 @@ def search_hotels():
     budget = data.get('budget', '20000')
     min_stars = data.get('min_stars', '1')
 
-    search_query = f"Looking for a hotel in {city} suitable for {travel_type}."
+    # Embedding logic
+    query_vector = get_embedding(f"Hotel in {city} for {travel_type}")
     
-    # Embedding using Gemini (Stable)
-    query_vector = get_embedding(search_query)
+    if query_vector is None:
+        return jsonify({"error": "Embedding generation failed"}), 500
 
-    if not query_vector:
-        return jsonify({"error": "Failed to generate embeddings"}), 500
+    results = pinecone_index.query(vector=query_vector, top_k=5, include_metadata=True)
 
-    results = pinecone_index.query(
-        vector=query_vector,
-        top_k=8, 
-        include_metadata=True
-    )
-
-    hotel_context = ""
-    for match in results['matches']:
-        m = match['metadata']
-        hotel_context += f"- {m.get('name')} | Rating: {m.get('rating')} | Price: {m.get('price')} PKR | Amenities: {m.get('amenities')}\n"
+    hotel_context = "\n".join([f"- {m['metadata'].get('name')} | Rating: {m['metadata'].get('rating')} | Price: {m['metadata'].get('price')} PKR" for m in results['matches']])
 
     if not hotel_context:
-        return jsonify([{"name": "No Database Match", "comment": f"No data for {city}."}])
+        return jsonify([{"name": "No Results", "comment": "No data found."}])
 
-    prompt = f"""You are an AI travel agent. Database Context: {hotel_context}.
-    User wants: {min_stars}-star hotel in {city} for {travel_type} around Rs.{budget}.
-    Output STRICTLY in JSON format: {{"hotels": [{"name": "...", "rating": 0, "price": 0, "amenities": [], "comment": "...", "top": true}]}}"""
+    prompt = f"Travel agent context: {hotel_context}. User wants {min_stars}-star hotel in {city} for {travel_type} budget {budget}. JSON format: {{\"hotels\": [...]}}"
 
     try:
         response = groq_client.chat.completions.create(
