@@ -1,6 +1,6 @@
 Flask
 flask-cors
-pinecone-client
+pinecone
 groq
 python-dotenv
 requests
