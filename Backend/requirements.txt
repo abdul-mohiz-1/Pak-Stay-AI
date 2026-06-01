@@ -4,3 +4,4 @@ pinecone
 groq
 python-dotenv
 requests
+gunicorn
