@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # --- PATHS SETTING (Taake Flask ko index.html mil jaye) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.join(BASE_DIR, '..')
-FRONTEND_DIR = os.path.join(ROOT_DIR, 'frontend')
+FRONTEND_DIR = os.path.join(ROOT_DIR, 'Frontend')
 
 load_dotenv()
 app = Flask(__name__, template_folder=FRONTEND_DIR)
