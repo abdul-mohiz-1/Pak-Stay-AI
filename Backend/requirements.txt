@@ -1,0 +1,6 @@
+Flask
+flask-cors
+pinecone-client
+groq
+python-dotenv
+requests

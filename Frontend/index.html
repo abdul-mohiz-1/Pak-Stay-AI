@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PakStay AI - Smart Journey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- BASE & TYPOGRAPHY --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMATED BACKGROUND --- */
+        .bg-animation {
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(56,189,248,0.1) 0%, rgba(15,23,42,1) 50%);
+            animation: rotateBg 30s linear infinite;
+            z-index: -1;
+        }
+        @keyframes rotateBg { 100% { transform: rotate(360deg); } }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .text-center { text-align: center; }
+        .mt-3 { margin-top: 25px; } .mb-3 { margin-bottom: 25px; }
+
+        /* --- TYPOGRAPHY --- */
+        .main-title { font-size: 3.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
+        .step-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; color: #ffffff; text-align: center; }
+        .highlight { color: #38bdf8; font-weight: 700; }
+
+        /* --- GLASSMORPHISM PANELS --- */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+            transition: all 0.4s ease;
+        }
+
+        /* --- SELECTION CARDS --- */
+        .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .selection-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; padding: 25px 15px; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 500; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .selection-card i { font-size: 2rem; color: #38bdf8; transition: 0.3s; }
+        .selection-card:hover, .selection-card.selected { 
+            background: rgba(56, 189, 248, 0.15); 
+            border-color: #38bdf8; 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 20px rgba(56,189,248,0.2);
+        }
+
+        /* --- SLIDER --- */
+        .modern-slider {
+            -webkit-appearance: none; width: 100%; height: 8px;
+            background: rgba(255,255,255,0.1); border-radius: 5px; outline: none; margin: 20px 0;
+        }
+        .modern-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 28px; height: 28px;
+            background: #38bdf8; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(56,189,248,0.5);
+        }
+        .budget-display { font-size: 2.5rem; font-weight: 700; color: #38bdf8; text-align: center; margin-bottom: 10px; }
+
+        /* --- BUTTONS --- */
+        .glow-btn {
+            width: 100%; padding: 18px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.2rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .glow-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(37,99,235,0.5); }
+
+        /* --- ANIMATIONS & UTILS --- */
+        .hidden { display: none !important; }
+        .animate-slide-up { animation: slideUp 0.6s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- LOADER --- */
+        .loader-circle {
+            width: 80px; height: 80px; margin: 20px auto;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #38bdf8;
+            border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Shake Animation for Errors */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake-animation { animation: shake 0.4s ease; border-color: #f43f5e !important; }
+
+        /* --- RESULTS CARDS --- */
+        .hotel-card {
+            background: rgba(30, 41, 59, 0.9);
+            border-left: 5px solid #38bdf8;
+            border-radius: 16px; padding: 25px; margin-bottom: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            position: relative; animation: slideUp 0.5s ease forwards;
+        }
+        .hotel-card.top-choice { border-left-color: #fbbf24; }
+        .top-badge { position: absolute; top: -12px; right: 25px; background: #fbbf24; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 5px 15px rgba(251,191,36,0.3); }
+        .hotel-name { font-size: 1.6rem; color: #ffffff; margin-bottom: 8px; }
+        .hotel-meta { color: #94a3b8; font-size: 1rem; margin-bottom: 15px; display:flex; gap:20px;}
+        .stars { color: #fbbf24; }
+        .price-badge { background: rgba(56,189,248,0.1); color: #38bdf8; padding: 8px 15px; border-radius: 8px; font-weight: 700; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(56,189,248,0.3);}
+        .amenities { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .pill { background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); }
+        .ai-comment { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; color: #cbd5e1; font-style: italic; border-left: 3px solid #64748b;}
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <main class="container">
+        <header class="text-center mb-3">
+            <h1 class="main-title">PakStay <span class="highlight">AI</span></h1>
+        </header>
+
+        <section id="step-city" class="glass-panel animate-slide-up">
+            <h2 class="step-title">1. Select Destination</h2>
+            <div class="selection-grid">
+                <div class="selection-card city-btn" data-val="Islamabad"><i class="fa-solid fa-mosque"></i>Islamabad</div>
+                <div class="selection-card city-btn" data-val="Lahore"><i class="fa-solid fa-archway"></i>Lahore</div>
+                <div class="selection-card city-btn" data-val="Karachi"><i class="fa-solid fa-water"></i>Karachi</div>
+                <div class="selection-card city-btn" data-val="Rawalpindi"><i class="fa-solid fa-city"></i>Rawalpindi</div>
+                <div class="selection-card city-btn" data-val="Peshawar"><i class="fa-solid fa-fort-awesome"></i>Peshawar</div>
+                <div class="selection-card city-btn" data-val="Quetta"><i class="fa-solid fa-mountain"></i>Quetta</div>
+                <div class="selection-card city-btn" data-val="Multan"><i class="fa-solid fa-sun"></i>Multan</div>
+                <div class="selection-card city-btn" data-val="Faisalabad"><i class="fa-solid fa-industry"></i>Faisalabad</div>
+            </div>
+            
+            <div style="margin-top:20px; text-align:center;">
+                 <input type="text" id="other-city" placeholder="Or type any city (e.g., Naran)..." style="width:100%; max-width:300px; padding:12px; border-radius:8px; border:1px solid #38bdf8; background:rgba(0,0,0,0.3); color:white; outline:none;">
+                 <button id="next-city-btn" class="glow-btn" style="width:auto; padding:10px 20px; margin-left:10px; font-size:1rem;">Next</button>
+                 <div id="city-error" style="color: #f43f5e; margin-top: 10px; display: none; font-weight: 500;"></div>
+            </div>
+        </section>
+
+        <section id="step-type" class="glass-panel hidden">
+            <h2 class="step-title">2. Who are you traveling with?</h2>
+            <div class="selection-grid">
+                <div class="selection-card type-btn" data-val="Family"><i class="fa-solid fa-users"></i>Family</div>
+                <div class="selection-card type-btn" data-val="Business"><i class="fa-solid fa-briefcase"></i>Business</div>
+                <div class="selection-card type-btn" data-val="Solo"><i class="fa-solid fa-user"></i>Solo</div>
+                <div class="selection-card type-btn" data-val="Friends"><i class="fa-solid fa-user-group"></i>Friends Group</div>
+            </div>
+        </section>
+
+        <section id="step-stars" class="glass-panel hidden">
+            <h2 class="step-title">3. Minimum Hotel Rating</h2>
+            <div class="selection-grid">
+                <div class="selection-card star-btn" data-val="2"><i class="fa-solid fa-star"></i>2+ Stars</div>
+                <div class="selection-card star-btn" data-val="3"><i class="fa-solid fa-star"></i>3+ Stars</div>
+                <div class="selection-card star-btn" data-val="4"><i class="fa-solid fa-star"></i>4+ Stars</div>
+                <div class="selection-card star-btn" data-val="5"><i class="fa-solid fa-star"></i>5 Stars</div>
+            </div>
+        </section>
+
+        <section id="step-budget" class="glass-panel hidden text-center">
+            <h2 class="step-title">4. Maximum Budget (Per Night)</h2>
+            <div class="budget-display">Rs. <span id="budget-val">15000</span></div>
+            <input type="range" id="budget-slider" class="modern-slider" min="3000" max="50000" step="1000" value="15000">
+            <button id="final-search-btn" class="glow-btn mt-3">Find My AI Match <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+        </section>
+
+        <section id="step-loading" class="glass-panel text-center hidden">
+            <div class="loader-circle"></div>
+            <h2 class="step-title mt-3">AI is analyzing context...</h2>
+            <p>Performing Deep Semantic Search in Pinecone...</p>
+        </section>
+
+        <section id="step-results" class="hidden">
+            <div class="glass-panel mb-3" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="step-title" style="margin:0;">Top Matches</h2>
+                <button onclick="location.reload()" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:1rem; font-weight:600;"><i class="fa-solid fa-rotate-right"></i> New Search</button>
+            </div>
+            <div id="results-container"></div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State variables
+            let searchData = { city: '', type: '', stars: '', budget: '15000' };
+
+            // UI Elements
+            const sCity = document.getElementById('step-city');
+            const sType = document.getElementById('step-type');
+            const sStars = document.getElementById('step-stars');
+            const sBudget = document.getElementById('step-budget');
+            const sLoad = document.getElementById('step-loading');
+            const sRes = document.getElementById('step-results');
+
+            // Supported Cities Database
+            const supportedCities = [
+                'islamabad', 'lahore', 'karachi', 'rawalpindi', 'peshawar', 'quetta', 'multan', 'faisalabad',
+                'murree', 'hunza', 'swat', 'skardu', 'gilgit', 'naran', 'kaghan', 'gwadar', 'bahawalpur', 'sialkot', 'gujranwala', 'abbottabad'
+            ];
+
+            function nextStep(current, next) {
+                current.classList.add('hidden');
+                next.classList.remove('hidden');
+                next.classList.add('animate-slide-up');
+            }
+
+            // Step 1 Logic (Grid Buttons)
+            document.querySelectorAll('.city-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    searchData.city = btn.getAttribute('data-val');
+                    nextStep(sCity, sType);
+                });
+            });
+
+            // "Other City" Smart Validator
+            function handleOtherCity() {
+                const inputVal = document.getElementById('other-city').value.trim();
+                if (!inputVal) return;
+                
+                const typedCity = inputVal.toLowerCase();
+                
+                if (supportedCities.includes(typedCity)) {
+                    searchData.city = typedCity.charAt(0).toUpperCase() + typedCity.slice(1);
+                    document.getElementById('city-error').style.display = 'none';
+                    nextStep(sCity, sType);
+                } else {
+                    const err = document.getElementById('city-error');
+                    err.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Sorry, "${inputVal}" is not in our database yet.`;
+                    err.style.display = 'block';
+                    
+                    const inputField = document.getElementById('other-city');
+                    inputField.classList.add('shake-animation');
+                    setTimeout(() => { inputField.classList.remove('shake-animation'); }, 400);
+                }
+            }
+
+            document.getElementById('next-city-btn').addEventListener('click', handleOtherCity);
+            document.getElementById('other-city').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleOtherCity();
+            });
+
+            // Step 2 Logic
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    searchData.type = btn.getAttribute('data-val');
+                    nextStep(sType, sStars);
+                });
+            });
+
+            // Step 3 Logic
+            document.querySelectorAll('.star-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    searchData.stars = btn.getAttribute('data-val');
+                    nextStep(sStars, sBudget);
+                });
+            });
+
+            // Step 4 Logic (Budget Slider)
+            const slider = document.getElementById('budget-slider');
+            slider.addEventListener('input', (e) => {
+                searchData.budget = e.target.value;
+                document.getElementById('budget-val').innerText = parseInt(e.target.value).toLocaleString();
+            });
+
+            // Final Search (Connecting to Backend)
+            document.getElementById('final-search-btn').addEventListener('click', async () => {
+                nextStep(sBudget, sLoad);
+                
+                try {
+                    // Yahan URL update kar diya hai takay CORS aur connection error na aaye
+                    const response = await fetch('http://127.0.0.1:5000/api/search', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            city: searchData.city,
+                            travel_type: searchData.type,
+                            budget: searchData.budget,
+                            min_stars: searchData.stars
+                        })
+                    });
+
+                    if(!response.ok) throw new Error('Backend failed');
+                    
+                    const aiHotelsData = await response.json();
+                    
+                    sLoad.classList.add('hidden');
+                    sRes.classList.remove('hidden');
+                    renderCards(aiHotelsData);
+
+                } catch(error) {
+                    console.error("Error fetching data:", error);
+                    alert("Error reaching backend. Ensure your Flask server is running on port 5000.");
+                    location.reload();
+                }
+            });
+
+            // Render Results Cards (Updated to handle missing data gracefully)
+            function renderCards(hotelDataArray) {
+                const container = document.getElementById('results-container');
+                container.innerHTML = ''; 
+
+                hotelDataArray.forEach((hotel, index) => {
+                    const animDelay = index * 0.2; 
+                    const badge = hotel.top ? `<span class="top-badge"><i class="fa-solid fa-crown"></i> Top Pick</span>` : '';
+                    const topClass = hotel.top ? 'top-choice' : '';
+                    
+                    let pills = '';
+                    if(Array.isArray(hotel.amenities)) {
+                        pills = hotel.amenities.map(a => `<span class="pill">${a}</span>`).join('');
+                    }
+
+                    const cardHTML = `
+                        <div class="hotel-card ${topClass}" style="animation-delay: ${animDelay}s">
+                            ${badge}
+                            <h3 class="hotel-name">${hotel.name || 'AI Suggested Hotel'}</h3>
+                            <div class="hotel-meta">
+                                <span><i class="fa-solid fa-location-dot"></i> ${searchData.city}</span>
+                                <span class="stars"><i class="fa-solid fa-star"></i> ${hotel.rating || 'N/A'}/5</span>
+                            </div>
+                            <div class="price-badge">Rs. ${hotel.price || 'N/A'} / night</div>
+                            <div class="amenities">${pills}</div>
+                            <div class="ai-comment"><i class="fa-solid fa-wand-magic-sparkles"></i> <strong>AI Insight:</strong> ${hotel.comment || 'Perfect for your trip requirements!'}</div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

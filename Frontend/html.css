@@ -1,0 +1,130 @@
+/* --- BASE & TYPOGRAPHY --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+body { 
+    background-color: #0f172a; /* Premium Dark/Blue Base */
+    color: #f8fafc; 
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- ANIMATED BACKGROUND --- */
+.bg-animation {
+    position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(56,189,248,0.1) 0%, rgba(15,23,42,1) 50%);
+    animation: rotateBg 30s linear infinite;
+    z-index: -1;
+}
+@keyframes rotateBg { 100% { transform: rotate(360deg); } }
+
+/* --- LAYOUT --- */
+.container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+.text-center { text-align: center; }
+.mt-2 { margin-top: 15px; } .mt-3 { margin-top: 25px; } .mb-3 { margin-bottom: 25px; }
+
+/* --- TYPOGRAPHY --- */
+.main-title { font-size: 3.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
+.subtitle { font-size: 1.1rem; color: #94a3b8; font-weight: 300; margin-bottom: 40px; }
+.step-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 20px; color: #ffffff; }
+.highlight { color: #38bdf8; font-weight: 700; } /* Neon Blue accent */
+
+/* --- GLASSMORPHISM PANELS --- */
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    transition: all 0.4s ease;
+}
+
+/* --- STEP 1: CITY CARDS --- */
+.city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+.city-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white; padding: 20px 10px; border-radius: 12px;
+    font-size: 1.1rem; font-weight: 500; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.city-card i { font-size: 1.5rem; color: #38bdf8; transition: 0.3s; }
+.city-card:hover { 
+    background: rgba(56, 189, 248, 0.1); 
+    transform: translateY(-5px); 
+    border-color: #38bdf8;
+    box-shadow: 0 10px 20px rgba(56,189,248,0.2);
+}
+
+/* --- INPUTS & SELECTS --- */
+.modern-input, .modern-select {
+    width: 100%; padding: 15px 20px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white; border-radius: 12px;
+    font-size: 1rem; outline: none; transition: 0.3s;
+}
+.modern-input:focus, .modern-select:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.2); }
+.modern-select option { background: #1e293b; color: white; }
+
+/* --- FILTERS GRID --- */
+.smart-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.filter-box label { display: block; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 8px; }
+.full-width { grid-column: 1 / -1; }
+
+/* --- SLIDER --- */
+.modern-slider {
+    -webkit-appearance: none; width: 100%; height: 8px;
+    background: rgba(255,255,255,0.1); border-radius: 5px; outline: none;
+}
+.modern-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px;
+    background: #38bdf8; border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 10px rgba(56,189,248,0.5);
+}
+
+/* --- BUTTONS --- */
+.glow-btn {
+    width: 100%; padding: 18px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white; border: none; border-radius: 12px;
+    font-size: 1.2rem; font-weight: 600; cursor: pointer;
+    transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+}
+.glow-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(37,99,235,0.5); }
+.text-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+.text-btn:hover { color: #38bdf8; }
+
+/* --- ANIMATIONS & UTILS --- */
+.hidden { display: none !important; }
+.animate-fade-in { animation: fadeIn 0.8s ease forwards; }
+.animate-slide-up { animation: slideUp 0.6s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- LOADER --- */
+.loader-circle {
+    width: 80px; height: 80px; margin: 20px auto;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top: 4px solid #38bdf8;
+    border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+/* --- RESULTS CARDS --- */
+.results-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; }
+.hotel-card {
+    background: rgba(30, 41, 59, 0.9);
+    border-left: 5px solid #38bdf8;
+    border-radius: 16px; padding: 25px; margin-bottom: 20px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    position: relative; animation: slideUp 0.5s ease forwards;
+}
+.hotel-card.top-choice { border-left-color: #fbbf24; }
+.top-badge { position: absolute; top: -12px; right: 25px; background: #fbbf24; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 5px 15px rgba(251,191,36,0.3); }
+.hotel-name { font-size: 1.6rem; color: #ffffff; margin-bottom: 8px; }
+.hotel-meta { color: #94a3b8; font-size: 1rem; margin-bottom: 15px; display:flex; gap:20px;}
+.stars { color: #fbbf24; }
+.price-badge { background: rgba(56,189,248,0.1); color: #38bdf8; padding: 8px 15px; border-radius: 8px; font-weight: 700; font-size: 1.2rem; display: inline-block; margin-bottom: 15px; border: 1px solid rgba(56,189,248,0.3);}
+.amenities { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+.pill { background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); }
+.ai-comment { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; color: #cbd5e1; font-style: italic; border-left: 3px solid #64748b;}
