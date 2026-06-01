@@ -4,39 +4,44 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from pinecone import Pinecone
 from groq import Groq
+import google.generativeai as genai
 from dotenv import load_dotenv
 
-# --- PATHS SETTING (Taake Flask ko index.html mil jaye) ---
+# --- PATHS SETTING ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.join(BASE_DIR, '..')
 FRONTEND_DIR = os.path.join(ROOT_DIR, 'Frontend')
 
 load_dotenv()
 app = Flask(__name__, template_folder=FRONTEND_DIR)
-CORS(app) # Frontend block issues fix karne ke liye
+CORS(app)
 
 # --- API KEYS SETUP ---
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-HF_TOKEN = os.getenv('HF_TOKEN') # HuggingFace Token for Embeddings API
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') # Naya addition
 
 print("Connecting to databases and AI... Please wait.")
 pc = Pinecone(api_key=PINECONE_API_KEY)
 pinecone_index = pc.Index("pak-stay-index")
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# --- LIGHTWEIGHT EMBEDDING FUNCTION (Zero RAM Cost) ---
+# Gemini configure karein
+genai.configure(api_key=GEMINI_API_KEY)
+
+# --- GEMINI EMBEDDING FUNCTION (Zero RAM Cost) ---
 def get_embedding(text):
-    api_url = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
-    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    
-    response = requests.post(api_url, headers=headers, json={"inputs": text})
-    
-    if response.status_code != 200:
-        print(f"Hugging Face API Error: {response.text}")
+    try:
+        # Using Gemini's embedding model
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_document"
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Gemini API Error: {e}")
         return []
-    
-    return response.json()
 
 # --- HOME PAGE ROUTE ---
 @app.route('/')
@@ -55,7 +60,7 @@ def search_hotels():
     # Semantic Query
     search_query = f"Looking for a hotel in {city} suitable for {travel_type}."
     
-    # API ke zariye vector generate karna (No sentence-transformers library needed!)
+    # Generate vector using Gemini
     query_vector = get_embedding(search_query)
 
     if not query_vector:
@@ -73,7 +78,6 @@ def search_hotels():
         m = match['metadata']
         hotel_context += f"- {m.get('name')} | Rating: {m.get('rating')} | Price: {m.get('price')} PKR | Amenities: {m.get('amenities')}\n"
 
-    # Agar us city ka bilkul hi koi data na ho
     if not hotel_context:
         return jsonify([{
             "name": "No Database Match",
@@ -83,7 +87,7 @@ def search_hotels():
             "comment": f"We currently don't have any data for {city}."
         }])
 
-    # --- SMART AI PROMPT ---
+    # --- SMART AI PROMPT (Using Groq) ---
     prompt = f"""
     You are an intelligent AI travel agent for Pakistan. 
     User wants: A {min_stars}-star (or higher) hotel in {city} for {travel_type} with a target budget around Rs.{budget}.
@@ -117,15 +121,12 @@ def search_hotels():
         llm_response = response.choices[0].message.content
         parsed = json.loads(llm_response)
         
-        # Safely extract the hotels array from Groq's JSON
         hotel_json = parsed.get("hotels", [])
-             
         return jsonify(hotel_json)
 
     except Exception as e:
         print(f"LLM Error: {e}")
         return jsonify({"error": "Failed to generate AI response"}), 500
 
-# --- ENGINE START ---
 if __name__ == '__main__':
     app.run(debug=True)
